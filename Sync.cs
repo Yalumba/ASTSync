@@ -367,13 +367,13 @@ public static class Sync
                             // API doesn't return training id but instead a display name
                             // Display name could have characters which azure table keys are sensitive to, strip with a hash.
                             // This is used for the rowkey
-                            
-                            var hashDisplay = GetHashFromString(trainingAssignment.DisplayName);
+                            // Added check for trainingAssignment.DisplayName = null, this can be caused by a removal of a training module in Attack Simulation Training Content Library
+                            var hashDisplay = String.IsNullOrEmpty(trainingAssignment.DisplayName) ? GetHashFromString("Training Module Missing") : GetHashFromString(trainingAssignment.DisplayName);
                             
                             _batchTrainingUserCoverage.EnqueueUpload(new TableTransactionAction(TableTransactionActionType.UpdateReplace, new TableEntity("TrainingUserCoverage", $"{trainingUser.AttackSimulationUser.UserId}{hashDisplay}{trainingAssignment.AssignedDateTime?.ToString("yyyyMMddHHmmss")}" )
                             {
                                 {"UserId", trainingUser.AttackSimulationUser.UserId},
-                                {"DisplayName", trainingAssignment.DisplayName},
+                                {"DisplayName", trainingAssignment.DisplayName ?? "Training Module Missing"},
                                 {"AssignedDateTime", trainingAssignment.AssignedDateTime},
                                 {"CompletionDateTime", trainingAssignment.CompletionDateTime},
                                 {"TrainingStatus", trainingAssignment.TrainingStatus.ToString()}
